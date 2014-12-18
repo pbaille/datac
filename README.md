@@ -214,7 +214,7 @@ but you can assign a wild behavior to any piece of data via the ```*!``` functio
 ```clj
 (let [zm (*! {:a inc :b dec} :&)]
   (*> zm {:a 1 :b 1})) 
-  ;=> {:a 2, :b 0}
+;=> {:a 2, :b 0}
 ```
 
 the point of this operator may not be clear but I find that it yields to powerful flexibility when starting to define functions relying on it.
@@ -240,7 +240,7 @@ it takes 2 arguments:
 (let [dumb-vec (§! [] 
                (fn [this that] 
                  (str "i'm " this " , when given " that " I return a dumb str")))]
-(§> dumb-vec 1))
+  (§> dumb-vec 1))
 
 ;=> "i'm [] , when given 1 I return a dumb str"
 ```
@@ -253,7 +253,7 @@ same here with the ```$!``` function that takes the instance to extend and the n
   
 ```clj
 (let [hid-cyc ($! [1 2] (fn [f this] (map f (cycle this))))]
-($> inc hid-cyc))
+  ($> inc hid-cyc))
 
 ;=> (2 3 2 3 2 ...)
 ```
@@ -266,13 +266,13 @@ zipping is a bit more complicated, because you may want to be able to dispatch o
 ;; when you want to extend your instance as the first argument of &> use &1!
 
 (let [cyclic-zip (&1! [inc dec] #(&> (cycle %1) %2))]
-(&> cyclic-zip (range)))
+  (&> cyclic-zip (range)))
 ;=> (1 0 3 2 5 ...)
 
 ;; else $2!
 
 (let [x (&2! [1 2 3] (fn [x y] :up-to-you))]
-(&> [inc dec] x))
+  (&> [inc dec] x))
 ;=> :up-to-you 
 
 ;; if both 1st and 2nd arguments have custom implementations, the 2nd's one will be used
@@ -285,7 +285,7 @@ the alterable function let you define the way that an arbitrary function is appl
 
 ```clj
 (let [unalterable (alt! [1 2] (fn [this f] this))]
-(§> set unalterable))
+  (§> set unalterable))
 
 ;=> [1 2]
 ```
@@ -295,7 +295,7 @@ the alterable function let you define the way that an arbitrary function is appl
 ```clj
 (let [fixed-keys (<>! {:a 1 :b 2} 
                           (fn [x y] (select-keys y (keys x))))]
-(<> fixed-keys {:a 3 :b 4 :c 5}))
+  (<> fixed-keys {:a 3 :b 4 :c 5}))
 
 ;=> {:a 3, :b 4} 
 ```
