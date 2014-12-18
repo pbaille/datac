@@ -304,8 +304,8 @@ the alterable function let you define the way that an arbitrary function is appl
 
 ```clj
 (b! my-data
-{:$ (fn [x y] ...)
-:§ (fn [x y] ...)})
+  {:$ (fn [x y] ...)
+  :§ (fn [x y] ...)})
 ```
   
 ### type based extension
@@ -315,8 +315,8 @@ note that it dispatch on type and not on class, so you can avoid to define new t
 
 ```clj
 (defn foo 
-"assign the type tag 'foo to x"
-[x] (vary-meta x assoc :type 'foo))
+  "assign the type tag 'foo to x"
+  [x] (vary-meta x assoc :type 'foo))
 
 ;now we can impl dist-m multi for 'foo instances
 (defmethod $m 'foo [f x]
