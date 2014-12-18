@@ -15,19 +15,19 @@ the ```§>``` operator represent invocation, it takes any combination of two arg
 
 - for functions nothing fancy
 
-```
+```clj
 (§> inc 1) ;=> 2
 ```
 
 - for nil it's like identity function
 
-```
+```clj
 (§> nil :anything) ;=> :anything
 ``` 
 
 - for core collections types:
 
-```
+```clj
 (§> [inc dec] 0) ;=> [1 -1]
 
 (§> {:a inc :b dec} 0) ;=> {:b -1, :a 1}
@@ -39,7 +39,7 @@ the ```§>``` operator represent invocation, it takes any combination of two arg
 
 - for anything else, just ignore second argument 
 
-```
+```clj
 (§> 1 :bar) ;=> 1
 ``` 
 
@@ -49,7 +49,7 @@ the ```$>``` operator is like clojure core map function but preserve context, an
 
 - on non sequential types it behaves as §>
 
-```
+```clj
 ($> :foo 2) ;=> :foo
 
 ($> inc 2) ;=> 3
@@ -59,7 +59,7 @@ the ```$>``` operator is like clojure core map function but preserve context, an
 
 - on core collections:
 
-```
+```clj
 ($> inc [1 2 3]) ;=> [2 3 4]
 
 ($> inc {:a 1 :b 2}) ;=> {:a 2, :b 3}
@@ -70,7 +70,7 @@ the ```$>``` operator is like clojure core map function but preserve context, an
 ```
 - taking advantage of new core collection's invocation behavior
 
-```
+```clj
 ($> {:a inc :b dec} (range))
 ;=> ({:b -1, :a 1} {:b 0, :a 2} {:b 1, :a 3}...)
 
@@ -84,7 +84,7 @@ the ```&>``` operator is for zipping together two pieces of data
 
 - with non sequential data it behave like ```§>```
 
-```
+```clj
 (&> :bob 2) ;=> :bob
 
 (&> inc 2) ;=> 3
@@ -94,14 +94,14 @@ the ```&>``` operator is for zipping together two pieces of data
 
 - when only one of the arg is sequential it do what it can
 
-```
+```clj
 (&> 1 [0 0 0]) ;=> [1 0 0]
 (&> [inc dec] 1) ;=> 2
 ```
 
 - when the two args are collections 
 
-```
+```clj
 (&> [inc dec inc dec] [0 0 0 0])
 ;=> [1 -1 1 -1]
 
@@ -122,7 +122,7 @@ the ```&>``` operator is for zipping together two pieces of data
 
 the ```+>``` operator is for adding together two pieces of data
 
-```
+```clj
 (+> 1 1) ;=> 2
 (+> "hello " "world!") ;=> "hello world!"
 (+> [1 2] [3 4]) ;=> [1 2 3 4]
@@ -140,7 +140,7 @@ the ```+>``` operator is for adding together two pieces of data
 
 the ```o>``` return the identity value of any data 
 
-```
+```clj
 (o> 42) ;=> 0 
 (o> [1 2 3]) ;=> []
 (o> #{1 2 3}) ;=> #{}
@@ -157,18 +157,18 @@ you may not often use it directly, but the implementation of distribution and zi
 
 - on nil it returns nil
 
-```
+```clj
 (<> nil 1) ;=> nil
 ```
 - on functions it wrap second arg in a function that always returns it
 
-```
+```clj
 (<> inc 1) ;=> (constantly 1)
 
 ```
 - on core collections  
 
-```  
+```clj  
 (<> [] 1) ;=> [1]
 
 (<> [1 2 3] (list 1 2))
@@ -184,7 +184,7 @@ you may not often use it directly, but the implementation of distribution and zi
 
 - on anything else it will return second args unchanged
 
-```
+```clj
 (<> 1 inc) ;=> inc
 (<> "aze" [1 2]) ;=> [1 2]
 ```
@@ -193,14 +193,14 @@ you may not often use it directly, but the implementation of distribution and zi
 
 all those operators have their flipped equivalents
 
-```
+```clj
 (= ($> inc [1 2 3]) 
    (<$ [1 2 3] inc))
 ```
 
 and are curried 
 
-```
+```clj
 (= (($> inc) [1 2 3])
    ($> inc [1 2 3]))
 ```
@@ -211,7 +211,7 @@ by default the ```*>``` operator behave like ```§>```
 
 but you can assign a wild behavior to any piece of data via the ```*!``` function
 
-```
+```clj
 (let [zm (*! {:a inc :b dec} :&)]
   (*> zm {:a 1 :b 1})) 
   ;=> {:a 2, :b 0}
@@ -236,14 +236,14 @@ it takes 2 arguments:
 - the piece of data for which you want to redefine invocation 
 - the invocation function
   
-  ```
-  (let [dumb-vec (§! [] 
-                   (fn [this that] 
-                     (str "i'm " this " , when given " that " I return a dumb str")))]
-    (§> dumb-vec 1))
-    
-    ;=> "i'm [] , when given 1 I return a dumb str"
-  ```
+```clj
+(let [dumb-vec (§! [] 
+               (fn [this that] 
+                 (str "i'm " this " , when given " that " I return a dumb str")))]
+(§> dumb-vec 1))
+
+;=> "i'm [] , when given 1 I return a dumb str"
+```
   
 when called with only 1 arg, ```§!``` return the current implementation of ```§>```
   
@@ -251,79 +251,79 @@ when called with only 1 arg, ```§!``` return the current implementation of ```�
 
 same here with the ```$!``` function that takes the instance to extend and the new implementation 
   
-  ```
-  (let [hid-cyc ($! [1 2] (fn [f this] (map f (cycle this))))]
-    ($> inc hid-cyc))
-    
-  ;=> (2 3 2 3 2 ...)
-  ```
+```clj
+(let [hid-cyc ($! [1 2] (fn [f this] (map f (cycle this))))]
+($> inc hid-cyc))
+
+;=> (2 3 2 3 2 ...)
+```
   
 #### zipping 
 
 zipping is a bit more complicated, because you may want to be able to dispatch on either the first or second argument, that's why their is 2 different way of extending to ```&>```
   
-  ```
-  ;; when you want to extend your instance as the first argument of &> use &1!
-  
-  (let [cyclic-zip (&1! [inc dec] #(&> (cycle %1) %2))]
-    (&> cyclic-zip (range)))
-  ;=> (1 0 3 2 5 ...)
-  
-  ;; else $2!
-  
-  (let [x (&2! [1 2 3] (fn [x y] :up-to-you))]
-    (&> [inc dec] x))
-  ;=> :up-to-you 
-  
-  ;; if both 1st and 2nd arguments have custom implementations, the 2nd's one will be used
-  
-  ```
+```clj
+;; when you want to extend your instance as the first argument of &> use &1!
+
+(let [cyclic-zip (&1! [inc dec] #(&> (cycle %1) %2))]
+(&> cyclic-zip (range)))
+;=> (1 0 3 2 5 ...)
+
+;; else $2!
+
+(let [x (&2! [1 2 3] (fn [x y] :up-to-you))]
+(&> [inc dec] x))
+;=> :up-to-you 
+
+;; if both 1st and 2nd arguments have custom implementations, the 2nd's one will be used
+
+```
   
 #### alteration 
   
 the alterable function let you define the way that an arbitrary function is applied on your data, here a dumb exemple that just make the data unalterable
 
-  ```
-  (let [unalterable (alt! [1 2] (fn [this f] this))]
-    (§> set unalterable))
-    
-  ;=> [1 2]
-  ```
+```clj
+(let [unalterable (alt! [1 2] (fn [this f] this))]
+(§> set unalterable))
+
+;=> [1 2]
+```
   
 #### building
   
-  ```
-  (let [fixed-keys (<>! {:a 1 :b 2} 
-                              (fn [x y] (select-keys y (keys x))))]
-    (<> fixed-keys {:a 3 :b 4 :c 5}))
-    
-  ;=> {:a 3, :b 4} 
-  ```
+```clj
+(let [fixed-keys (<>! {:a 1 :b 2} 
+                          (fn [x y] (select-keys y (keys x))))]
+(<> fixed-keys {:a 3 :b 4 :c 5}))
+
+;=> {:a 3, :b 4} 
+```
 
 #### several at once 
 
-  ```
-  (b! my-data
-   {:$ (fn [x y] ...)
-    :§ (fn [x y] ...)})
-  ```
+```clj
+(b! my-data
+{:$ (fn [x y] ...)
+:§ (fn [x y] ...)})
+```
   
 ### type based extension
   
 if you want to extend a whole type to any datac operator, you can do it via multimethods
 note that it dispatch on type and not on class, so you can avoid to define new types, and just rely on a type tag in metadata, like the example below
 
-  ```
-  (defn foo 
-    "assign the type tag 'foo to x"
-    [x] (vary-meta x assoc :type 'foo))
-  
-  ;now we can impl dist-m multi for 'foo instances
-  (defmethod $m 'foo [f x]
-    (println "pouet"))
-  
-  ($> inc (foo [1 2 3])) ;=> prints "pouet"
-  ```
+```clj
+(defn foo 
+"assign the type tag 'foo to x"
+[x] (vary-meta x assoc :type 'foo))
+
+;now we can impl dist-m multi for 'foo instances
+(defmethod $m 'foo [f x]
+(println "pouet"))
+
+($> inc (foo [1 2 3])) ;=> prints "pouet"
+```
   
 - all main operations can be extended like this, see op/multi table below
   
@@ -343,7 +343,7 @@ It is possible to share behaviors between data
 
 - you can either pass a specific implementation from one data to another 
 
-```
+```clj
 (>$ x y) ;=> set the $> implementation of x to be the same as y
 ```
 
@@ -351,13 +351,13 @@ the same is possible with ```>&```, ```>§```, ```>+```, ```>o``` and ```>*```
 
 - you can merge all the behaviors of x into y's behaviors 
 
-```
+```clj
 (>b x y)
 ```
 
 - or replace y behaviors by x behaviors 
 
-```
+```clj
 (>b! x y)
 ```
 
@@ -369,7 +369,7 @@ eseq stands for "map-entries sequence", let's see it in action:
 
 - on collections 
 
-```
+```clj
 (eseq [1 2 3]) ;=> ([0 1] [1 2] [2 3])
 (eseq (list 1 2 3)) ;=> ([0 1] [1 2] [2 3])
 (eseq (range)) ;=> ([0 0] [1 1] [2 2] ...)
@@ -379,13 +379,13 @@ eseq stands for "map-entries sequence", let's see it in action:
 
 - on nil 
 
-```
+```clj
 (eseq nil) ;=> ()
 ```
 
 - on non sequentials
 
-```
+```clj
 (eseq 1) ;=> ([0 1])
 (eseq (MapEntry. :a 0)) ;=> ([:a 0])
 ```
@@ -396,7 +396,7 @@ like operators and properties, you can extand any instance or type to it:
 
 - instance extension 
 
-```
+```clj
 ;another dumb example, a vector that eseq itself reversed
 (let [rvec (eseq! [1 2 3] #(eseq (reverse %)))]
   (eseq rvec))
@@ -406,7 +406,7 @@ like operators and properties, you can extand any instance or type to it:
 
 - type extension 
 
-```
+```clj
 (defmethod eseqm 'foo [x] 
   (map vector (map - (range)) x))
 
@@ -422,7 +422,7 @@ Avoiding to use defrecord and deftype when not really needed
 
 A way to represent computations as raw data instead of functions
  
-```
+```clj
 (def stats {:max (partial apply max) 
             :min (partial apply min) })
 
@@ -439,7 +439,7 @@ A way to represent computations as raw data instead of functions
 
 Sometimes we want treat functions as values, but sometimes we want to treat them as their result value, here is two way to do it 
 
-```
+```clj
 (defn pv [f]
   (b! f 
    {:alt (fn [this f] (pv (comp (§> f) this)))
@@ -448,7 +448,7 @@ Sometimes we want treat functions as values, but sometimes we want to treat them
 ```
 or: 
 
-```
+```clj
 (defn pv [f]
   (-> f 
    (alt! (fn [this f] (pv (comp (§> f) this))))
@@ -459,7 +459,7 @@ or:
 
 and in both case it should work:
 
-```
+```clj
 ((pv inc) 1)
 ((§> inc (pv inc)) 2)
 (($> inc (pv vector)) 2 3 4)
