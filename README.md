@@ -229,11 +229,12 @@ op | multi | get/set | share | keyword
 :-: | :-: | :-: | :-: | :-:
 §> | §m | §! | >§ | :§
 $> | $m | $! | >$ | :$
-&> | &m | &1! &2! | >&1 >&2 | :&1 :&2
+&> | &m | &1!/&2! | >&1/>&2 | :&1/:&2
 +> | +m | +! | >+ | :+
 o> | om | o! | >o | :o
 <> | <>m | <>! | ><> |:<>
 alt | altm |alt! | >alt | :alt
+eseq | eseqm | eseq! | >eseq | :eseq  
 
 ### instance level extension
 
@@ -313,33 +314,21 @@ zipping is a bit more complicated, because you may want to be able to dispatch o
 
 ```
   
-#### alteration 
+#### alt
   
-the ```alt!``` function let you define the way that an arbitrary function is applied on your data, here a dumb exemple that just make the data unalterable
+the ```alt``` is not intended to be used directly, but ```§>``` use it under the cover, it lets you specify the way that an arbitrary function should applied on your data.
+
+```clj 
+(§> func my-data) <=> (alt my-data func)
+```
+
+here's a dumb example, that just make your data unalterable
 
 ```clj
 (let [unalterable (alt! [1 2] (fn [this f] this))]
   (§> set unalterable))
 
 ;=> [1 2]
-```
-  
-#### wrapping
-
-```clj
-(let [fixed-keys (<>! {:a 1 :b 2} 
-                      (fn [x y] (select-keys y (keys x))))]
-  (<> fixed-keys {:a 3 :b 4 :c 5}))
-
-;=> {:a 3, :b 4} 
-```
-
-#### several at once 
-
-```clj
-(b! my-data
-  {:$ (fn [x y] ...)
-   :§ (fn [x y] ...)})
 ```
   
 ### type based extension
@@ -352,50 +341,12 @@ note that it dispatch on type and not on class, so you can avoid to define new t
   "assign the type tag 'foo to x"
   [x] (vary-meta x assoc :type 'foo))
 
-;now we can impl $m for 'foo instances
+;please refer to the extension table to get the name of the corresponding multimethod
 (defmethod $m 'foo [f x]
   (println "pouet"))
 
 ($> inc (foo [1 2 3])) ;=> prints "pouet"
 ```
-  
-- all main operations can be extended like this, see op/multi table below
-  
-op | multi | get/set | share | keyword
-:-: | :-: | :-: | :-: | :-:
-§> | §m | §! | >§ | :§
-$> | $m | $! | >$ | :$
-&> | &m | &! | >& | :&
-+> | +m | +! | >+ | :+
-o> | om | o! | >o | :o
-<> | <>m | <>! | ><> |:<>
-alt | altm |alt! | >alt | :alt
-
-### behavior sharing 
-
-It is possible to share behaviors between data
-
-- you can either pass a specific implementation from one data to another 
-
-```clj
-(>$ x y) ;=> set the $> implementation of x to be the same as y
-```
-
-the same is possible with ```>&```, ```>§```, ```>+```, ```>o``` and ```>*```
-
-- you can merge all the behaviors of x into y's behaviors 
-
-```clj
-(>b x y)
-```
-
-- or replace y behaviors by x behaviors 
-
-```clj
-(>b! x y)
-```
-
-
 ### eseq abstraction
 
 the eseq abstraction is the common denominator in datac, all data can be expressed via it.
@@ -426,27 +377,7 @@ eseq stands for "map-entries sequence", let's see it in action:
 
 All main operators implementations lays on this abstraction, so by extending your type to it, you can benefit from almost all of datac functionalities.
 
-like operators and properties, you can extand any instance or type to it: 
-
-- instance extension 
-
-```clj
-;another dumb example, a vector that eseq itself reversed
-(let [rvec (eseq! [1 2 3] #(eseq (reverse %)))]
-  (eseq rvec))
-  
-;=> ([0 3][1 2][2 1])
-```
-
-- type extension 
-
-```clj
-(defmethod eseqm 'foo [x] 
-  (map vector (map - (range)) x))
-
-(eseq (foo [1 2 3 4])) 
-;=> ([0 1] [-1 2] [-2 3] [-3 4])
-```
+like any operators , you can extand any instance or type to it 
 
 ## Motivation
 
@@ -471,7 +402,7 @@ A way to represent computations as raw data instead of functions
 
 ## more concrete example 
 
-Sometimes we want treat functions as values, but sometimes we want to treat them as their result value, here is two way to do it 
+Sometimes we want treat functions as values, but sometimes we want to treat them as their result value, here is a way to do it 
 
 ```clj
 (defn pv [f]
