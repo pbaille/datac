@@ -45,7 +45,7 @@ the ```§>``` operator represent invocation, it takes any combination of two arg
 
 ### distribution 
 
-the ```$>``` operator is like clojure core map function but preserve context, and use ```*>``` instead of normal invocation
+the ```$>``` operator is like clojure.core/map but preserve context, and use ```*>``` (that we will explain later) instead of normal invocation.
 
 - on non sequential types it behaves as §>
 
@@ -212,7 +212,7 @@ by default the ```*>``` operator behave like ```§>```
 but you can assign a wild behavior to any piece of data via the ```*!``` function
 
 ```clj
-(let [zm (*! {:a inc :b dec} :&)]
+(let [zm (*! {:a inc :b dec} &>)]
   (*> zm {:a 1 :b 1})) 
 ;=> {:a 2, :b 0}
 ```
@@ -223,11 +223,75 @@ the point of this operator may not be clear but I find that it yields to powerfu
 
 all of this is implemented with multimethods and metadata, and can be extended to any data instance or type
 
+### extension table 
+
+op | multi | get/set | share | keyword
+:-: | :-: | :-: | :-: | :-:
+§> | §m | §! | >§ | :§
+$> | $m | $! | >$ | :$
+&> | &m | &! | >& | :&
++> | +m | +! | >+ | :+
+o> | om | o! | >o | :o
+<> | <>m | <>! | ><> |:<>
+alt | altm |alt! | >alt | :alt
+
 ### instance level extension
 
-at the instance level, behaviors are added to metadata under the :behaviors key,
-you can add them manually or with helper functions:
-  
+at the instance level, behaviors are added to metadata under the :behaviors key. 
+
+you can directly conj a behavior into metadata like this:
+
+```
+; here we specify §> behavior for my-data 
+(vary-meta my-data assoc-in [:behaviors :§] (fn [x y] ...))
+```
+
+or with the corresponding setter:
+
+```
+; same here with 
+(§! my-data (fn [x y] ...))
+```  
+
+it is possible to insert several behaviors at the time like this:
+
+```
+(b! my-data 
+  {:§ (fn [x y] ...)
+   :$ (fn [x y] ...)})
+```
+
+or pass a behavior from a data to another 
+
+```
+; here we pass invocation behavior of x to y
+(>§ x y)
+```
+
+or merge all behaviors of x into y's
+
+```
+(>b x y)
+```
+
+or replace y's behaviors by x's 
+
+```
+(>b! x y)
+```
+
+maybe sometimes you just want to get a specific behavior from x 
+
+```
+(§! x) 
+```
+
+or all behaviors 
+
+```
+(b! x)
+```
+
 #### invocation 
 
 you can redefine the way that a piece of data is invoked via the ```§!``` function
@@ -249,7 +313,10 @@ when called with only 1 arg, ```§!``` return the current implementation of ```�
   
 #### distribution
 
-same here with the ```$!``` function that takes the instance to extend and the new implementation 
+same here with the ```$!``` function that takes the instance to extend and the new implementation.
+the implementation must be a function of 2 arguments 
+  - the function to distribute over your data 
+  - your data
   
 ```clj
 (let [hid-cyc ($! [1 2] (fn [f this] (map f (cycle this))))]
@@ -281,7 +348,7 @@ zipping is a bit more complicated, because you may want to be able to dispatch o
   
 #### alteration 
   
-the alterable function let you define the way that an arbitrary function is applied on your data, here a dumb exemple that just make the data unalterable
+the ```alt!``` function let you define the way that an arbitrary function is applied on your data, here a dumb exemple that just make the data unalterable
 
 ```clj
 (let [unalterable (alt! [1 2] (fn [this f] this))]
@@ -290,11 +357,11 @@ the alterable function let you define the way that an arbitrary function is appl
 ;=> [1 2]
 ```
   
-#### building
-  
+#### wrapping
+
 ```clj
 (let [fixed-keys (<>! {:a 1 :b 2} 
-                          (fn [x y] (select-keys y (keys x))))]
+                      (fn [x y] (select-keys y (keys x))))]
   (<> fixed-keys {:a 3 :b 4 :c 5}))
 
 ;=> {:a 3, :b 4} 
@@ -305,7 +372,7 @@ the alterable function let you define the way that an arbitrary function is appl
 ```clj
 (b! my-data
   {:$ (fn [x y] ...)
-  :§ (fn [x y] ...)})
+   :§ (fn [x y] ...)})
 ```
   
 ### type based extension
@@ -318,9 +385,9 @@ note that it dispatch on type and not on class, so you can avoid to define new t
   "assign the type tag 'foo to x"
   [x] (vary-meta x assoc :type 'foo))
 
-;now we can impl dist-m multi for 'foo instances
+;now we can impl $m for 'foo instances
 (defmethod $m 'foo [f x]
-(println "pouet"))
+  (println "pouet"))
 
 ($> inc (foo [1 2 3])) ;=> prints "pouet"
 ```
