@@ -229,7 +229,7 @@ op | multi | get/set | share | keyword
 :-: | :-: | :-: | :-: | :-:
 §> | §m | §! | >§ | :§
 $> | $m | $! | >$ | :$
-&> | &m | &! | >& | :&
+&> | &m | &1! &2! | >&1 >&2 | :&1 :&2
 +> | +m | +! | >+ | :+
 o> | om | o! | >o | :o
 <> | <>m | <>! | ><> |:<>
@@ -241,21 +241,21 @@ at the instance level, behaviors are added to metadata under the :behaviors key.
 
 you can directly conj a behavior into metadata like this:
 
-```
+```clj
 ; here we specify §> behavior for my-data 
 (vary-meta my-data assoc-in [:behaviors :§] (fn [x y] ...))
 ```
 
 or with the corresponding setter:
 
-```
+```clj
 ; same here with 
 (§! my-data (fn [x y] ...))
 ```  
 
 it is possible to insert several behaviors at the time like this:
 
-```
+```clj
 (b! my-data 
   {:§ (fn [x y] ...)
    :$ (fn [x y] ...)})
@@ -263,66 +263,33 @@ it is possible to insert several behaviors at the time like this:
 
 or pass a behavior from a data to another 
 
-```
+```clj
 ; here we pass invocation behavior of x to y
 (>§ x y)
 ```
 
 or merge all behaviors of x into y's
 
-```
+```clj
 (>b x y)
 ```
 
 or replace y's behaviors by x's 
 
-```
+```clj
 (>b! x y)
 ```
 
 maybe sometimes you just want to get a specific behavior from x 
 
-```
+```clj
 (§! x) 
 ```
 
 or all behaviors 
 
-```
+```clj
 (b! x)
-```
-
-#### invocation 
-
-you can redefine the way that a piece of data is invoked via the ```§!``` function
-it takes 2 arguments:
-
-- the piece of data for which you want to redefine invocation 
-- the invocation function
-  
-```clj
-(let [dumb-vec (§! [] 
-               (fn [this that] 
-                 (str "i'm " this " , when given " that " I return a dumb str")))]
-  (§> dumb-vec 1))
-
-;=> "i'm [] , when given 1 I return a dumb str"
-```
-  
-when called with only 1 arg, ```§!``` return the current implementation of ```§>```
-  
-#### distribution
-
-same here with the ```$!``` function that takes the instance to extend and the new implementation.
-the implementation must be a function of 2 arguments 
-  - the function to distribute over your data 
-  - your data
-  
-```clj
-(let [hid-cyc ($! [1 2] (fn [f this] (map f (cycle this))))]
-  ($> inc hid-cyc))
-
-;=> (2 3 2 3 2 ...)
 ```
   
 #### zipping 
