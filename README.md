@@ -5,8 +5,10 @@ A clojure library for data combinations
 
 ## Overview
 
+add this to project.clj
+ 
 ```
-(require datac.core)
+[datac "0.0.1"]
 ```
 
 ### invocation (sort of)
