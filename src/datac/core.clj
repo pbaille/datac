@@ -170,7 +170,7 @@
     :default [x y] (&m {0 x} y))
   
   (def-curried &> [x y]
-    (if-let [z (or (&2! y) (&1! y))] 
+    (if-let [z (or (&2! y) (&1! x))] 
       (z x y)
       (if (sequential? y)
         (&m x y)

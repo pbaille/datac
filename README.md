@@ -229,7 +229,7 @@ op | multi | get/set | share | keyword
 :-: | :-: | :-: | :-: | :-:
 §> | §m | §! | >§ | :§
 $> | $m | $! | >$ | :$
-&> | &m | &1!/&2! | >&1/>&2 | :&1/:&2
+&> | &m | &1! &2! | >&1 >&2 | :&1 :&2
 +> | +m | +! | >+ | :+
 o> | om | o! | >o | :o
 <> | <>m | <>! | ><> |:<>
@@ -316,7 +316,7 @@ zipping is a bit more complicated, because you may want to be able to dispatch o
   
 #### alt
   
-the ```alt``` is not intended to be used directly, but ```§>``` use it under the cover, it lets you specify the way that an arbitrary function should applied on your data.
+the ```alt``` operator is not intended to be used directly, but ```§>``` use it under the cover, it lets you specify the way that an arbitrary function should be applied on your data.
 
 ```clj 
 (§> func my-data) <=> (alt my-data func)
@@ -405,32 +405,28 @@ A way to represent computations as raw data instead of functions
 Sometimes we want treat functions as values, but sometimes we want to treat them as their result value, here is a way to do it 
 
 ```clj
-(defn pv [f]
+(defn pv 
+  "parametric value"
+  [f]
   (b! f 
    {:alt (fn [this f] (pv (comp (§> f) this)))
     :$   (fn [f this] (pv (comp ($> f) this)))
-    :&2  (fn [this x] (pv (comp (&> x) this)))}))
+    :&1  (fn [this x] (pv (comp (<& x) this)))
+    :&2  (fn [x this] (pv (comp (&> x) this)))}))
 ```
-or: 
+
+and it should work:
 
 ```clj
-(defn pv [f]
-  (-> f 
-   (alt! (fn [this f] (pv (comp (§> f) this))))
-   ($!   (fn [f this] (pv (comp ($> f) this))))
-   (&2!  (fn [this x] (pv (comp (&> x) this))))))
-   
-```
-
-and in both case it should work:
-
-```clj
-((pv inc) 1)
-((§> inc (pv inc)) 2)
-(($> inc (pv vector)) 2 3 4)
-((&> [inc dec inc] (pv vector)) 2 3 4)
+((pv inc) 1) ;=> 2
+((§> inc (pv inc)) 2) ;=> 4
+(($> inc (pv vector)) 2 3 4) ;=> [3 4 5]
+((&> [inc dec inc] (pv vector)) 2 3 4) ;=> [3 2 5] 
+((&> (pv vector) (range)) inc dec pos? neg?) ;=> (1 0 true false 4 5 6 ...)
 
 ```
+
+
 
 
 
