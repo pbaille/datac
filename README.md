@@ -5,10 +5,20 @@ A clojure library for data combinations
 
 ## Overview
 
-add this to project.clj
- 
-```
+### Usage 
+
+add this to your dependencies vector in project.clj
+
+```clj
 [datac "0.0.1"]
+```
+
+then use or require it 
+
+```
+(ns my-ns 
+  ;; ...
+  [:use datac.core])
 ```
 
 ### invocation (sort of)
