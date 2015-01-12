@@ -21,6 +21,10 @@ then use or require it
   [:use datac.core])
 ```
 
+### Feedback 
+
+please give me feedback, positive or negative, it will help me to improve this library and future ones. thank you
+
 ### invocation (sort of)
 
 the ```§>``` operator represent invocation, it takes any combination of two arguments, and sort of invoke the first arg on the second arg
