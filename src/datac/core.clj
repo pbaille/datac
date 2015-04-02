@@ -75,7 +75,7 @@
     :default [x y] y)
 
   (def-curried <> [x y]
-    (if-let [b (:<> (meta x))] 
+    (if-let [b (<>! x)] 
       (b x y) 
       (<>m x y)))
  
