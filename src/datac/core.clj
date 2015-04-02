@@ -172,10 +172,9 @@
   (def-curried &> [x y]
     (if-let [z (or (&2! y) (&1! x))] 
       (z x y)
-      (do (dr) 
-        (if (sequential? y)
+      (if (coll? y)
         (&m x y)
-        (val (first (&m x y)))))))
+        (val (first (&m x y))))))
   
 ;; plus --------------
 
