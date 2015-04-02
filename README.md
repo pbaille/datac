@@ -10,7 +10,7 @@ A clojure library for data combinations
 add this to your dependencies vector in project.clj
 
 ```clj
-[datac "0.0.2"]
+[datac "0.0.3"]
 ```
 
 then use or require it 
