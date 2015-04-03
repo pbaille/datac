@@ -13,12 +13,13 @@ add this to your dependencies vector in project.clj
 [datac "0.0.3"]
 ```
 
-then use or require it 
+then require it 
 
 ```
-(ns my-ns 
-  ;; ...
-  [:use datac.core])
+(require '[datac.core :refer :all])
+
+($> inc {:a 1 :b 2})
+;=> {:a 2, :b 3}
 ```
 
 ### Feedback 
