@@ -16,17 +16,20 @@ add this to your dependencies vector in project.clj
 then require it 
 
 ```
-<<<<<<< HEAD
+
 (require '[datac.core :refer :all])
 
 ($> inc {:a 1 :b 2})
 ;=> {:a 2, :b 3}
+
 =======
+
 (ns my-ns 
   ;; ...
   (:require [datac.core :refer :all]))
-($> inc {:a 1 :b 2}) ;=> {:a 2, :b 3}
->>>>>>> 856b3dba8dbc5a1bfe189dc4cc1700c463ab5336
+($> inc {:a 1 :b 2}) 
+;=> {:a 2, :b 3}
+
 ```
 
 ### Feedback 
