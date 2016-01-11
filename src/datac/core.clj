@@ -5,7 +5,7 @@
 
 (defmacro dr [] `(drepl/debug-repl))
 
-(set! *print-length* 5)
+(set! *print-length* 50)
 
 ;; utils -------------
 
