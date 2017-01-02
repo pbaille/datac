@@ -2,6 +2,8 @@
 
 A clojure library for data combinations
 
+Deprecated, please see [new version](https://github.com/pbaille/facets/blob/master/datac.md) 
+
 
 ## Overview
 
